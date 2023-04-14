@@ -8,6 +8,8 @@ public class EmployeeInterface extends JFrame {
     private JPanel panel1;
     private JButton reportFixedButton;
     private JTextField tfFixReport;
+    private JList<String> fixedList;
+    private JButton reSubmit;
 
     BugDAO bugDAO=new BugDAO();
 
@@ -27,8 +29,19 @@ public class EmployeeInterface extends JFrame {
                     " | Description: " + buggie.description + " | Reported By: " + buggie.reportedBy;
             i++;
         }
-
         list.setListData(bugStrings);
+
+        String[] fixedBugStrings = new String[employee.fixedBugs.size()];
+        i = 0;
+        for (bug buggie : employee.fixedBugs) {
+            fixedBugStrings[i] = "ID: " + buggie.ID + " | Type: " + buggie.type + " | Severity: " +
+                    buggie.severity + " | Assigned To: " + buggie.assignedTo + " | Report Time: " +
+                    buggie.reportTime.toString() + " | Fix Time: " + buggie.fixTime +
+                    " | Description: " + buggie.description + " | Reported By: " + buggie.reportedBy;
+            i++;
+        }
+
+        fixedList.setListData(fixedBugStrings);
 
         reportFixedButton.addActionListener(new ActionListener() {
             @Override
@@ -39,7 +52,7 @@ public class EmployeeInterface extends JFrame {
                     bug fixed=employee.assignedBugs.get(list.getSelectedIndex());
                     fixed.fixReport=tfFixReport.getText();
                     fixed.fixTime= LocalTime.now();
-                    employee.assignedBugs.remove(list.getSelectedIndex());
+                    employee.assignedBugs.remove(fixed);
                     employee.fixedBugs.add(fixed);
                     globals.totalBugs.remove(fixed);
                     globals.fixedBugs.add(fixed);
@@ -59,11 +72,56 @@ public class EmployeeInterface extends JFrame {
                                 " | Description: " + buggie.description + " | Reported By: " + buggie.reportedBy;
                         i++;
                     }
-
                     list.setListData(bugStrings);
-
-
+                    String[] fixedBugStrings = new String[employee.fixedBugs.size()];
+                    i = 0;
+                    for (bug buggie : employee.fixedBugs) {
+                        fixedBugStrings[i] = "ID: " + buggie.ID + " | Type: " + buggie.type + " | Severity: " +
+                                buggie.severity + " | Assigned To: " + buggie.assignedTo + " | Report Time: " +
+                                buggie.reportTime.toString() + " | Fix Time: " + buggie.fixTime +
+                                " | Description: " + buggie.description + " | Reported By: " + buggie.reportedBy;
+                        i++;
+                    }
+                    fixedList.setListData(fixedBugStrings);
                 }
+            }
+        });
+        reSubmit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                bug fixed=globals.fixedBugs.get(fixedList.getSelectedIndex());
+                fixed.fixReport="";
+                fixed.fixTime= LocalTime.MIDNIGHT;
+                employee.assignedBugs.add(fixed);
+                employee.fixedBugs.remove(fixed);
+                globals.totalBugs.add(fixed);
+                globals.fixedBugs.remove(fixed);
+                //DB
+                bugDAO.clearFixedBugTable();
+                bugDAO.insertFixedBugs();
+                bugDAO.clearBugTable();
+                bugDAO.insertBugs();
+                JOptionPane.showMessageDialog(null, "Resubmitted ");
+                String[] bugStrings = new String[employee.assignedBugs.size()];
+                int i = 0;
+                for (bug buggie : employee.assignedBugs) {
+                    bugStrings[i] = "ID: " + buggie.ID + " | Type: " + buggie.type + " | Severity: " +
+                            buggie.severity + " | Assigned To: " + buggie.assignedTo + " | Report Time: " +
+                            buggie.reportTime.toString() + " | Fix Time: " + buggie.fixTime +
+                            " | Description: " + buggie.description + " | Reported By: " + buggie.reportedBy;
+                    i++;
+                }
+                list.setListData(bugStrings);
+                String[] fixedBugStrings = new String[employee.fixedBugs.size()];
+                i = 0;
+                for (bug buggie : employee.fixedBugs) {
+                    fixedBugStrings[i] = "ID: " + buggie.ID + " | Type: " + buggie.type + " | Severity: " +
+                            buggie.severity + " | Assigned To: " + buggie.assignedTo + " | Report Time: " +
+                            buggie.reportTime.toString() + " | Fix Time: " + buggie.fixTime +
+                            " | Description: " + buggie.description + " | Reported By: " + buggie.reportedBy;
+                    i++;
+                }
+                fixedList.setListData(fixedBugStrings);
             }
         });
     }
